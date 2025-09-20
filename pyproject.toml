@@ -1,0 +1,19 @@
+[project]
+name = "semmerge"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "orjson>=3.9.0",
+    "click>=8.1.7",
+    "typing-extensions>=4.12.2"
+]
+
+[project.scripts]
+semmerge = "semmerge.__main__:main"
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["semmerge*"]

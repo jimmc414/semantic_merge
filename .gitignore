@@ -96,3 +96,7 @@ pip-delete-this-directory.txt
 pip-log.txt
 pip-wheel-metadata/
 venv
+semmerge.egg-info/
+node_modules/
+!workers/ts/dist/
+!workers/ts/dist/**
