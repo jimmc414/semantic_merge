@@ -25,16 +25,25 @@ def compose_oplogs(delta_a: List[Op], delta_b: List[Op]) -> Tuple[List[Op], List
 
     idx_a = idx_b = 0
     rename_chain: Dict[str, str] = {}
-    move_chain: Dict[str, str] = {}
+    move_chain: Dict[str, Dict[str, str]] = {}
 
     def materialize(op: Op) -> None:
         cloned = _clone_op(op)
         symbol_id = cloned.target.symbolId
         if symbol_id in move_chain:
-            new_addr = move_chain[symbol_id]
+            move_info = move_chain[symbol_id]
+            new_addr = move_info.get("newAddress")
+            new_file = move_info.get("newFile")
             if cloned.type == "moveDecl":
-                cloned.params["newAddress"] = new_addr
-            cloned.target = Target(symbolId=symbol_id, addressId=new_addr)
+                if new_addr is not None:
+                    cloned.params["newAddress"] = new_addr
+                if new_file is not None:
+                    cloned.params["newFile"] = new_file
+            if new_addr is not None:
+                cloned.target = Target(symbolId=symbol_id, addressId=new_addr)
+            if cloned.type == "renameSymbol" and new_file is not None:
+                cloned.params["newFile"] = new_file
+                cloned.params["file"] = new_file
         if symbol_id in rename_chain and cloned.type != "renameSymbol":
             cloned.params = {**cloned.params, "renameContext": rename_chain[symbol_id]}
         out.append(cloned)
@@ -62,7 +71,15 @@ def compose_oplogs(delta_a: List[Op], delta_b: List[Op]) -> Tuple[List[Op], List
             if op_a.type == "renameSymbol":
                 rename_chain[op_a.target.symbolId] = str(op_a.params.get("newName"))
             if op_a.type == "moveDecl":
-                move_chain[op_a.target.symbolId] = str(op_a.params.get("newAddress"))
+                symbol_moves = move_chain.get(op_a.target.symbolId, {}).copy()
+                new_addr = op_a.params.get("newAddress")
+                new_file = op_a.params.get("newFile") or op_a.params.get("file")
+                if new_addr is not None:
+                    symbol_moves["newAddress"] = str(new_addr)
+                if new_file is not None:
+                    symbol_moves["newFile"] = str(new_file)
+                if symbol_moves:
+                    move_chain[op_a.target.symbolId] = symbol_moves
             materialize(op_a)
             idx_a += 1
         else:
@@ -82,7 +99,15 @@ def compose_oplogs(delta_a: List[Op], delta_b: List[Op]) -> Tuple[List[Op], List
             if op_b.type == "renameSymbol":
                 rename_chain[op_b.target.symbolId] = str(op_b.params.get("newName"))
             if op_b.type == "moveDecl":
-                move_chain[op_b.target.symbolId] = str(op_b.params.get("newAddress"))
+                symbol_moves = move_chain.get(op_b.target.symbolId, {}).copy()
+                new_addr = op_b.params.get("newAddress")
+                new_file = op_b.params.get("newFile") or op_b.params.get("file")
+                if new_addr is not None:
+                    symbol_moves["newAddress"] = str(new_addr)
+                if new_file is not None:
+                    symbol_moves["newFile"] = str(new_file)
+                if symbol_moves:
+                    move_chain[op_b.target.symbolId] = symbol_moves
             materialize(op_b)
             idx_b += 1
 
