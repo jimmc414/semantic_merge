@@ -58,6 +58,7 @@ def semmerge(base: str, a: str, b: str, inplace: bool, git: bool) -> None:  # no
     base_tree = checkout_tree_to_temp(base)
     left_tree = checkout_tree_to_temp(a)
     right_tree = checkout_tree_to_temp(b)
+    merged_tree: pathlib.Path | None = None
 
     try:
         op_log_left, op_log_right, _symbol_maps = worker.build_and_diff(base_tree, left_tree, right_tree)
