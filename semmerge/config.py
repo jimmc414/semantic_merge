@@ -3,8 +3,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable
+import importlib
+import importlib.util
 import pathlib
-import tomllib
+from types import ModuleType
+
+tomllib: ModuleType
+if importlib.util.find_spec("tomllib") is not None:  # pragma: no cover - depends on runtime Python version
+    tomllib = importlib.import_module("tomllib")
+else:  # pragma: no cover - exercised on Python < 3.11
+    tomllib = importlib.import_module("tomli")
 
 
 @dataclass
