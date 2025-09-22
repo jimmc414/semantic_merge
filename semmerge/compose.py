@@ -34,7 +34,7 @@ def compose_oplogs(delta_a: List[Op], delta_b: List[Op]) -> Tuple[List[Op], List
             new_addr = move_chain[symbol_id]
             if cloned.type == "moveDecl":
                 cloned.params["newAddress"] = new_addr
-            cloned.target = Target(symbol_id=symbol_id, addressId=new_addr)
+            cloned.target = Target(symbolId=symbol_id, addressId=new_addr)
         if symbol_id in rename_chain and cloned.type != "renameSymbol":
             cloned.params = {**cloned.params, "renameContext": rename_chain[symbol_id]}
         out.append(cloned)
