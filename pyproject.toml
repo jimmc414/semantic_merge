@@ -5,7 +5,8 @@ requires-python = ">=3.10"
 dependencies = [
     "orjson>=3.9.0",
     "click>=8.1.7",
-    "typing-extensions>=4.12.2"
+    "typing-extensions>=4.12.2",
+    "tomli>=2.0.1; python_version < \"3.11\"",
 ]
 
 [project.scripts]
