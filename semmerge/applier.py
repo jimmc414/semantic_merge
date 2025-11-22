@@ -73,10 +73,23 @@ def _apply_rename_symbol(root: pathlib.Path, op: Op) -> None:
     if not path.exists():
         logger.debug("renameSymbol target missing: %s", path)
         return
-    code = path.read_text(encoding="utf-8")
+
+    try:
+        code = path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        logger.warning("Skipping renameSymbol on %s: file is not valid UTF-8", path)
+        return
+    except OSError as exc:
+        logger.warning("Skipping renameSymbol on %s: %s", path, exc)
+        return
+
     pattern = re.compile(rf"\b{re.escape(str(old_name))}\b")
     code = pattern.sub(str(new_name), code)
-    path.write_text(code, encoding="utf-8")
+
+    try:
+        path.write_text(code, encoding="utf-8")
+    except OSError as exc:
+        logger.error("Failed to write renamed file %s: %s", path, exc)
 
 
 def _apply_modify_import(root: pathlib.Path, op: Op) -> None:
@@ -89,9 +102,22 @@ def _apply_modify_import(root: pathlib.Path, op: Op) -> None:
     if not path.exists():
         logger.debug("modifyImport target missing: %s", path)
         return
-    code = path.read_text(encoding="utf-8")
+
+    try:
+        code = path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        logger.warning("Skipping modifyImport on %s: file is not valid UTF-8", path)
+        return
+    except OSError as exc:
+        logger.warning("Skipping modifyImport on %s: %s", path, exc)
+        return
+
     code = str(code).replace(str(old_import), str(new_import))
-    path.write_text(code, encoding="utf-8")
+
+    try:
+        path.write_text(code, encoding="utf-8")
+    except OSError as exc:
+        logger.error("Failed to write modified import file %s: %s", path, exc)
 
 
 def _normalize_relpath(value: str) -> pathlib.Path:
